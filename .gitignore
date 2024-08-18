@@ -1,0 +1,32 @@
+# Go binary and executable files
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go test and benchmark files
+*.test
+*.out
+_bench
+
+# Go build and dependency directories
+/bin/
+/pkg/
+/vendor/
+
+# Go documentation files
+/doc/
+/site/
+
+# Go IDE and editor files
+.idea/
+.vscode/
+*.sublime-*
+*.swp
+*.swo
+
+# Go OS and editor temporary files
+*~
+.DS_Store
+Thumbs.db
