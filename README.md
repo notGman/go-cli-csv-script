@@ -36,6 +36,6 @@ A simple CLI tool for fetching API responses and saving them to a CSV file, crea
 
 ## Usage
 
-    ```bash
-    .\go-cli-script.exe script
-    ```
+```bash
+.\go-cli-script.exe script
+```
