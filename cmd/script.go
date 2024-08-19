@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/notgman/go-cli-script/survey"
+
 	"github.com/spf13/cobra"
 )
 
@@ -17,7 +19,7 @@ var scriptCmd = &cobra.Command{
 	Long: `Run a script and get a CSV file
 	
 	Example:
-	$ go-cmd script -u <https://testurl.com> -o <script.csv>
+	$ go-cmd script 
 	`,
 
 	Run: generateCSV,
@@ -25,18 +27,15 @@ var scriptCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(scriptCmd)
-	scriptCmd.Flags().StringP("url", "u", "", "URL to run the script")
-	scriptCmd.Flags().StringP("output", "o", "", "Output file")
-	scriptCmd.Flags().StringP("dataName", "d", "", "Name of the data to fetch")
 }
 
 func generateCSV(cmd *cobra.Command, args []string) {
 	fmt.Println("Running script...")
-	url, _ := cmd.Flags().GetString("url")
-	output, _ := cmd.Flags().GetString("output")
-	dataName, _ := cmd.Flags().GetString("dataName")
 
-	data,err := http.Get(url)
+	url := survey.StringPrompt("Enter the URL: ")
+	output := survey.StringPrompt("Enter the output file name: ")
+
+	data, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -47,12 +46,26 @@ func generateCSV(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	dataItems,ok := result[dataName].([]interface{})
+	keys := []string{}
+	for key := range result {
+		keys = append(keys, key)
+	}
+	dataName := survey.SingleSelect("Which field do you want?", keys)
+
+	dataItems, ok := result[dataName].([]interface{})
 	if !ok {
 		log.Fatalf("Could not find data with name %s", dataName)
 	}
 
-	file,err := os.Create(output+".csv")
+	headers := []string{}
+	firstItem := dataItems[0].(map[string]interface{})
+	for key := range firstItem {
+		headers = append(headers, key)
+	}
+
+	headers = survey.Checkboxes("Which are the fields you want? (select multiple options)", headers)
+
+	file, err := os.Create(output + ".csv")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -61,21 +74,15 @@ func generateCSV(cmd *cobra.Command, args []string) {
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
 
-	headers := []string{}
-	firstItem := dataItems[0].(map[string]interface{})
-	for key := range firstItem {
-		headers = append(headers, key)
-	}
 	writer.Write(headers)
 
-	for _,item := range dataItems {
+	for _, item := range dataItems {
 		values := []string{}
-		for _,key := range headers {
+		for _, key := range headers {
 			values = append(values, fmt.Sprintf("%v", item.(map[string]interface{})[key]))
 		}
 		writer.Write(values)
 	}
-
 
 	fmt.Println("Written to file", output+".csv")
 
