@@ -8,6 +8,7 @@ A simple CLI tool for fetching API responses and saving them to a CSV file, crea
 - [x] Parse JSON responses
 - [x] Convert data to CSV format
 - [x] Save data to a CSV file
+- [ ] Handle forced quit
 - [ ] Handle nested JSON structures
 - [ ] Add unit tests for core functionality
 - [ ] Improve error handling and validation
@@ -35,5 +36,6 @@ A simple CLI tool for fetching API responses and saving them to a CSV file, crea
 
 ## Usage
 
-```bash
-.\go-cli-script.exe
+    ```bash
+    .\go-cli-script.exe script
+    ```
