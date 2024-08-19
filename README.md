@@ -19,7 +19,7 @@ A simple CLI tool for fetching API responses and saving them to a CSV file, crea
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/notgman/go-cli-csv-script.git
+    git clone https://github.com/notGman/go-cli-csv-script.git
     ```
 
 2. Change to the project directory:
