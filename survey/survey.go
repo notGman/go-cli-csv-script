@@ -1,9 +1,14 @@
 package survey
 
 import (
+	"fmt"
+	"os"
+	"syscall"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/AlecAivazis/survey/v2/terminal"
 	"github.com/gofiber/fiber/v2/log"
+	"golang.org/x/term"
 )
 
 func Checkboxes(label string, opts []string) []string {
@@ -12,7 +17,7 @@ func Checkboxes(label string, opts []string) []string {
 		Message: label,
 		Options: opts,
 	}
-	err := survey.AskOne(prompt, &res)
+	err := survey.AskOne(prompt, &res, survey.WithIcons(func(icons *survey.IconSet) { icons.Question.Text = "<>" }))
 	if err != nil {
 		if err == terminal.InterruptErr {
 			log.Fatal("Interrupted")
@@ -28,7 +33,7 @@ func SingleSelect(label string, opts []string) string {
 		Message: label,
 		Options: opts,
 	}
-	err := survey.AskOne(prompt, &res)
+	err := survey.AskOne(prompt, &res, survey.WithIcons(func(icons *survey.IconSet) { icons.Question.Text = "<>" }))
 	if err != nil {
 		if err == terminal.InterruptErr {
 			log.Fatal("Interrupted")
@@ -43,7 +48,7 @@ func StringPrompt(label string) string {
 	prompt := &survey.Input{
 		Message: label,
 	}
-	err := survey.AskOne(prompt, &res)
+	err := survey.AskOne(prompt, &res, survey.WithIcons(func(icons *survey.IconSet) { icons.Question.Text = "<>" }))
 	if err != nil {
 		if err == terminal.InterruptErr {
 			log.Fatal("Interrupted")
@@ -51,4 +56,18 @@ func StringPrompt(label string) string {
 	}
 
 	return res
+}
+
+func PasswordPrompt(label string) string {
+	s := ""
+	for {
+		fmt.Fprint(os.Stderr, "<> "+label+" ")
+		b, _ := term.ReadPassword(int(syscall.Stdin))
+		s = string(b)
+		if s != "" {
+			break
+		}
+	}
+	fmt.Println()
+	return s
 }

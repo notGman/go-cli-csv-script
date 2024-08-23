@@ -9,6 +9,7 @@ A simple CLI tool for fetching API responses and saving them to a CSV file, crea
 - [x] Convert data to CSV format
 - [x] Save data to a CSV file
 - [x] Handle forced quit
+- [x] Add Auth support
 - [ ] Handle nested JSON structures
 - [ ] Add unit tests for core functionality
 - [ ] Improve error handling and validation

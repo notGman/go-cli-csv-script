@@ -36,9 +36,26 @@ func generateCSV(cmd *cobra.Command, args []string) {
 	fmt.Println("Running script...")
 
 	url := survey.StringPrompt("Enter the URL: ")
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	auth := survey.StringPrompt("Is authentication required? (y/n): ")
+	if auth == "y" {
+		authType:= survey.StringPrompt("Authentication type? (basic/bearer): ")
+		if authType == "basic" {
+			username := survey.StringPrompt("Enter the username: ")
+			password := survey.PasswordPrompt("Enter the password: ")
+
+			req.SetBasicAuth(username, password)
+		}
+	}
 	output := survey.StringPrompt("Enter the output file name: ")
 
-	data, err := http.Get(url)
+	client := &http.Client{}
+
+	data, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
 	}
