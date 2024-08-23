@@ -1,51 +1,92 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
+	"encoding/csv"
+	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
 	"os"
+
+	"github.com/notgman/go-cli-script/survey"
 
 	"github.com/spf13/cobra"
 )
 
+var scriptCmd = &cobra.Command{
+	Use:   "script",
+	Short: "Run a script and get a CSV file",
+	Long: `Run a script and get a CSV file
+	
+	Example:
+	$ go-cmd script 
+	`,
 
-
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "go-cli-script",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Run: generateCSV,
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	err := rootCmd.Execute()
+	err := scriptCmd.Execute()
 	if err != nil {
 		os.Exit(1)
 	}
 }
 
-func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
+func generateCSV(cmd *cobra.Command, args []string) {
+	fmt.Println("Running script...")
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.go-cli-script.yaml)")
+	url := survey.StringPrompt("Enter the URL: ")
+	output := survey.StringPrompt("Enter the output file name: ")
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	data, err := http.Get(url)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer data.Body.Close()
+
+	var result map[string]interface{}
+	if err := json.NewDecoder(data.Body).Decode(&result); err != nil {
+		log.Fatal(err)
+	}
+
+	keys := []string{}
+	for key := range result {
+		keys = append(keys, key)
+	}
+	dataName := survey.SingleSelect("Which field do you want?", keys)
+
+	dataItems, ok := result[dataName].([]interface{})
+	if !ok {
+		log.Fatalf("Could not find data with name %s", dataName)
+	}
+
+	headers := []string{}
+	firstItem := dataItems[0].(map[string]interface{})
+	for key := range firstItem {
+		headers = append(headers, key)
+	}
+
+	headers = survey.Checkboxes("Which are the fields you want? (select multiple options)", headers)
+
+	file, err := os.Create(output + ".csv")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	writer.Write(headers)
+
+	for _, item := range dataItems {
+		values := []string{}
+		for _, key := range headers {
+			values = append(values, fmt.Sprintf("%v", item.(map[string]interface{})[key]))
+		}
+		writer.Write(values)
+	}
+
+	fmt.Println("Written to file", output+".csv")
+
 }
-
-

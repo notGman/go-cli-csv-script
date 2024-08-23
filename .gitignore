@@ -1,3 +1,5 @@
+*.csv
+
 # Go binary and executable files
 *.exe
 *.exe~

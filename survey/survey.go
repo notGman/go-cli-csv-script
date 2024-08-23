@@ -1,6 +1,10 @@
 package survey
 
-import "github.com/AlecAivazis/survey/v2"
+import (
+	"github.com/AlecAivazis/survey/v2"
+	"github.com/AlecAivazis/survey/v2/terminal"
+	"github.com/gofiber/fiber/v2/log"
+)
 
 func Checkboxes(label string, opts []string) []string {
 	res := []string{}
@@ -8,7 +12,12 @@ func Checkboxes(label string, opts []string) []string {
 		Message: label,
 		Options: opts,
 	}
-	survey.AskOne(prompt, &res)
+	err := survey.AskOne(prompt, &res)
+	if err != nil {
+		if err == terminal.InterruptErr {
+			log.Fatal("Interrupted")
+		}
+	}
 
 	return res
 }
@@ -19,7 +28,12 @@ func SingleSelect(label string, opts []string) string {
 		Message: label,
 		Options: opts,
 	}
-	survey.AskOne(prompt, &res)
+	err := survey.AskOne(prompt, &res)
+	if err != nil {
+		if err == terminal.InterruptErr {
+			log.Fatal("Interrupted")
+		}
+	}
 
 	return res
 }
@@ -29,7 +43,12 @@ func StringPrompt(label string) string {
 	prompt := &survey.Input{
 		Message: label,
 	}
-	survey.AskOne(prompt, &res)
+	err := survey.AskOne(prompt, &res)
+	if err != nil {
+		if err == terminal.InterruptErr {
+			log.Fatal("Interrupted")
+		}
+	}
 
 	return res
 }
