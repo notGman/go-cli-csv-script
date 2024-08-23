@@ -49,6 +49,11 @@ func generateCSV(cmd *cobra.Command, args []string) {
 			password := survey.PasswordPrompt("Enter the password: ")
 
 			req.SetBasicAuth(username, password)
+		} else if authType == "bearer" {
+			token := survey.StringPrompt("Enter the Bearer token: ")
+			req.Header.Set("Authorization", "Bearer "+token)
+		} else {
+			log.Fatal("Invalid authentication type")
 		}
 	}
 	output := survey.StringPrompt("Enter the output file name: ")
